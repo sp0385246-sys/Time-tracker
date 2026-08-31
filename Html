@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Scholar OS · Student Consistency Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0d1b2a, #1b3a4b, #0f2d40);
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 16px 12px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* HEADER / HERO */
+    .hero {
+      background: linear-gradient(135deg, #0d1b2a, #163447);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 28px;
+      padding: 22px 18px 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+      backdrop-filter: blur(14px);
+    }
+
+    .date-text {
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .greeting {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin: 4px 0 14px;
+      color: white;
+    }
+
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(251, 191, 36, 0.18);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      color: #fbbf24;
+      border-radius: 40px;
+      padding: 6px 16px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-mini-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 14px 12px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #38bdf8;
+      line-height: 1.1;
+    }
+
+    /* GLASS CARD BASE */
+    .glass-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 24px;
+      padding: 18px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #f1f5f9;
+    }
+
+    .count-badge {
+      background: #38bdf8;
+      color: #0d1b2a;
+      border-radius: 30px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      margin-left: 8px;
+    }
+
+    /* MOOD SECTION */
+    .mood-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+
+    .mood-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 40px;
+      padding: 10px 14px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #e2e8f0;
+      min-width: 64px;
+    }
+
+    .mood-btn span {
+      font-size: 0.65rem;
+      letter-spacing: 0.5px;
+    }
+
+    .mood-btn.selected {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56,189,248,0.6);
+      transform: scale(1.1);
+    }
+
+    .mood-note-input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      outline: none;
+      margin-top: 4px;
+    }
+
+    .mood-saved-msg {
+      color: #34d399;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    /* ATTENDANCE */
+    .attendance-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #94a3b8;
+      transition: all 0.3s;
+    }
+
+    .status-dot.marked {
+      background: #34d399;
+      box-shadow: 0 0 14px #34d399;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      border: none;
+      color: #0d1b2a;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+      letter-spacing: 0.5px;
+    }
+
+    .primary-btn:active {
+      transform: scale(0.97);
+    }
+
+    .primary-btn:disabled {
+      background: #34d399;
+      color: #0d1b2a;
+      opacity: 0.9;
+      cursor: default;
+    }
+
+    .checkin-time {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
+
+    /* TIMER SECTION */
+    .timer-display {
+      font-size: 3.2rem;
+      font-weight: 700;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 4px;
+      margin: 10px 0 14px;
+      color: #f1f5f9;
+      transition: color 0.3s;
+    }
+
+    .timer-mode-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+
+    .mode-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #e2e8f0;
+      border-radius: 30px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #38bdf8;
+      color: #0d1b2a;
+      border-color: #38bdf8;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 8px 0 6px;
+    }
+
+    .control-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #e2e8f0;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-width: 70px;
+    }
+
+    .control-btn.primary {
+      background: #38bdf8;
+      color: #0d1b2a;
+    }
+
+    .study-total {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .custom-timer-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .custom-timer-row input {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 10px 14px;
+      color: #e2e8f0;
+      outline: none;
+    }
+
+    /* INPUTS & BUTTONS GENERIC */
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .input-group input[type="text"] {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      outline: none;
+      min-width: 140px;
+    }
+
+    .add-btn {
+      background: #38bdf8;
+      border: none;
+      color: #0d1b2a;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.15s;
+    }
+
+    .add-btn.mint {
+      background: #34d399;
+      color: #0d1b2a;
+    }
+
+    .target-list, .achieved-list, .habit-list {
+      list-style: none;
+      margin: 8px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .target-item, .achieved-item {
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 3px solid #38bdf8;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    .priority-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .priority-high {
+      background: rgba(248,113,113,0.25);
+      color: #f87171;
+      border: 1px solid #f87171;
+    }
+    .priority-medium {
+      background: rgba(251,191,36,0.2);
+      color: #fbbf24;
+      border: 1px solid #fbbf24;
+    }
+    .priority-low {
+      background: rgba(52,211,153,0.2);
+      color: #34d399;
+      border: 1px solid #34d399;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      margin-left: auto;
+      font-size: 1rem;
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+
+    .delete-btn:hover {
+      color: #f87171;
+      background: rgba(248,113,113,0.15);
+    }
+
+    .timestamp-muted {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      color: #94a3b8;
+      font-style: italic;
+      font-size: 0.85rem;
+      padding: 6px 0;
+    }
+
+    /* RATIO DISPLAY */
+    .ratio-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 12px 0;
+    }
+    .ratio-top, .ratio-bottom {
+      font-size: 2.8rem;
+      font-weight: 800;
+      transition: color 0.3s;
+    }
+    .ratio-top { color: #fbbf24; }
+    .ratio-line {
+      width: 50px;
+      height: 3px;
+      background: #38bdf8;
+      margin: 4px 0;
+      border-radius: 4px;
+    }
+    .ratio-bottom { color: #e2e8f0; }
+
+    .percentage-large {
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      color: #fbbf24;
+    }
+
+    .progress-bar-track {
+      background: rgba(255,255,255,0.08);
+      border-radius: 30px;
+      height: 14px;
+      width: 100%;
+      margin: 8px 0 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      background: #fbbf24;
+      height: 100%;
+      width: 0%;
+      border-radius: 30px;
+      transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .progress-bar-fill.full {
+      background: #34d399;
+      animation: mintPulse 1.5s infinite;
+    }
+
+    @keyframes mintPulse {
+      0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+      70% { box-shadow: 0 0 14px 6px rgba(52,211,153,0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    }
+
+    .status-label {
+      font-weight: 600;
+      margin: 6px 0 10px;
+      font-size: 0.95rem;
+    }
+
+    .priority-breakdown {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 8px 0 4px;
+    }
+    .priority-pill {
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* SUBJECT CHIPS */
+    .subject-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .subject-chip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 30px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .subject-chip.studied {
+      background: rgba(52,211,153,0.25);
+      border-color: #34d399;
+      color: #34d399;
+    }
+
+    /* HABITS */
+    .habit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .habit-checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .habit-checkbox.checked {
+      background: #34d399;
+      border-color: #34d399;
+      box-shadow: 0 0 12px #34d399;
+      color: #0d1b2a;
+    }
+    .habit-name {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+    .habit-progress {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .edit-habit-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      margin-left: 8px;
+    }
+
+    /* WEEKLY CHART */
+    .weekly-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 6px;
+      height: 110px;
+      margin: 16px 0 10px;
+    }
+    .chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .bar-wrapper {
+      height: 80px;
+      display: flex;
+      align-items: flex-end;
+      width: 100%;
+      justify-content: center;
+    }
+    .chart-bar {
+      width: 22px;
+      border-radius: 8px 8px 4px 4px;
+      background: #64748b;
+      transition: height 0.5s ease;
+      min-height: 4px;
+    }
+    .mood-emoji-float {
+      font-size: 0.8rem;
+    }
+    .day-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .day-label.today {
+      color: #38bdf8;
+      font-weight: 800;
+    }
+
+    /* QUOTE */
+    .quote-card {
+      border-left: 3px solid #38bdf8;
+      padding-left: 16px;
+    }
+    .quote-mark {
+      font-size: 4rem;
+      color: #38bdf8;
+      line-height: 0.6;
+      margin-bottom: 6px;
+    }
+    .quote-text {
+      font-style: italic;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .quote-author {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+    }
+
+    /* CALENDAR */
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin: 8px 0;
+    }
+    .calendar-weekday {
+      text-align: center;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 700;
+      padding: 4px 0;
+    }
+    .calendar-cell {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+      position: relative;
+      cursor: default;
+      transition: all 0.15s;
+    }
+    .calendar-cell.today-cell {
+      border: 2px solid #38bdf8;
+    }
+    .calendar-cell.future {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .calendar-cell.present-green {
+      background: #34d399;
+      color: #0d1b2a;
+      cursor: pointer;
+    }
+    .calendar-cell.present-amber {
+      background: #fbbf24;
+      color: #0d1b2a;
+      cursor: pointer;
+    }
+    .calendar-cell.present-red {
+      background: #f87171;
+      color: #0d1b2a;
+      cursor: pointer;
+    }
+    .calendar-cell.present-purple {
+      background: #a78bfa;
+      color: #0d1b2a;
+      cursor: pointer;
+    }
+    .calendar-cell:hover {
+      transform: scale(1.07);
+    }
+    .mood-overlay {
+      position: absolute;
+      bottom: 2px;
+      right: 3px;
+      font-size: 0.65rem;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 999;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-sheet {
+      background: #163447;
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding: 16px 20px 40px;
+      width: 100%;
+      max-width: 540px;
+      transform: translateY(40px);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.open .modal-sheet {
+      transform: translateY(0);
+    }
+    .drag-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+      margin: 0 auto 14px;
+    }
+    .modal-date {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .modal-status-pill {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      margin: 8px 0;
+      font-size: 0.8rem;
+    }
+    .modal-section {
+      margin: 16px 0;
+    }
+    .modal-section h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #163447;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #e2e8f0;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast-success {
+      border-color: #34d399;
+      color: #34d399;
+    }
+    .toast-warning {
+      border-color: #fbbf24;
+      color: #fbbf24;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 400px) {
+      .hero-stats-grid {
+        gap: 8px;
+      }
+      .timer-display {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- HERO HEADER -->
+  <header class="hero" id="heroHeader">
+    <div class="date-text" id="dateText"></div>
+    <div class="greeting" id="greetingText"></div>
+    <div class="streak-badge" id="streakBadge">🔥 0 day streak</div>
+    <div class="hero-stats-grid">
+      <div class="stat-mini-card"><div class="stat-label">Days Present</div><div class="stat-value" id="statDaysPresent">0</div></div>
+      <div class="stat-mini-card"><div class="stat-label">Goals Met</div><div class="stat-value" id="statGoalsMet">0</div></div>
+      <div class="stat-mini-card"><div class="stat-label">Consistency %</div><div class="stat-value" id="statConsistency">0%</div></div>
+      <div class="stat-mini-card"><div class="stat-label">Study Hours</div><div class="stat-value" id="statStudyHours">0h</div></div>
+    </div>
+  </header>
+
+  <!-- MOOD CHECK-IN -->
+  <section class="glass-card">
+    <div class="card-title">🙂 How are you feeling today?</div>
+    <div class="mood-row" id="moodButtons">
+      <button class="mood-btn" data-mood="struggling"><span>😔</span><span>Struggling</span></button>
+      <button class="mood-btn" data-mood="okay"><span>😐</span><span>Okay</span></button>
+      <button class="mood-btn" data-mood="good"><span>🙂</span><span>Good</span></button>
+      <button class="mood-btn" data-mood="great"><span>😊</span><span>Great</span></button>
+      <button class="mood-btn" data-mood="excellent"><span>🤩</span><span>Excellent</span></button>
+    </div>
+    <input type="text" class="mood-note-input" id="moodNoteInput" placeholder="Anything on your mind? (optional, max 120 chars)" maxlength="120">
+    <div class="mood-saved-msg" id="moodSavedMsg"></div>
+  </section>
+
+  <!-- ATTENDANCE -->
+  <section class="glass-card">
+    <div class="card-title">👆 Today's Attendance</div>
+    <div class="attendance-status">
+      <span class="status-dot" id="attendanceDot"></span>
+      <span id="attendanceText">Not marked — tap to check in</span>
+    </div>
+    <button class="primary-btn" id="markAttendanceBtn">👆 Mark Attendance</button>
+    <div class="checkin-time" id="checkinTimeDisplay"></div>
+  </section>
+
+  <!-- SCREEN TIME + STUDY TIMER -->
+  <section class="glass-card">
+    <div class="card-title">⏱️ Focus & Screen</div>
+    <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:10px;" id="screenTimeDisplay">Time on App: 0m</div>
+    <div class="timer-display" id="timerDisplay">25:00</div>
+    <div class="timer-mode-buttons">
+      <button class="mode-btn active" data-mode="focus">Focus 25m</button>
+      <button class="mode-btn" data-mode="short">Short Break 5m</button>
+      <button class="mode-btn" data-mode="long">Long Break 15m</button>
+    </div>
+    <div class="timer-controls">
+      <button class="control-btn primary" id="timerStartBtn">Start</button>
+      <button class="control-btn" id="timerPauseBtn">Pause</button>
+      <button class="control-btn" id="timerResetBtn">Reset</button>
+    </div>
+    <div class="custom-timer-row">
+      <input type="number" id="customTimerInput" placeholder="Custom minutes" min="1" max="180">
+      <button class="add-btn" id="customTimerBtn">Set</button>
+    </div>
+    <div class="study-total" id="studyTotalDisplay">Total focused today: 0m</div>
+  </section>
+
+  <!-- TARGETS SET -->
+  <section class="glass-card">
+    <div class="card-title">🎯 Targets Set Today <span class="count-badge" id="targetsSetCount">0</span></div>
+    <div class="priority-selector" style="display:flex; gap:6px; margin-bottom:10px;">
+      <button class="priority-chip mode-btn" data-priority="high">🔴 High</button>
+      <button class="priority-chip mode-btn active" data-priority="medium">🟡 Medium</button>
+      <button class="priority-chip mode-btn" data-priority="low">🟢 Low</button>
+    </div>
+    <div id="targetsSetList" class="target-list"></div>
+    <div class="input-group">
+      <input type="text" id="targetInput" placeholder="What do you plan to do today…">
+      <button class="add-btn" id="addTargetBtn">Add</button>
+    </div>
+  </section>
+
+  <!-- TARGETS ACHIEVED -->
+  <section class="glass-card">
+    <div class="card-title">✅ Targets Achieved Today <span class="count-badge" id="targetsAchievedCount">0</span></div>
+    <div id="targetsAchievedList" class="achieved-list"></div>
+    <div class="input-group">
+      <input type="text" id="achievedInput" placeholder="What did you actually complete…">
+      <button class="add-btn mint" id="addAchievedBtn">Add</button>
+    </div>
+  </section>
+
+  <!-- PROGRESS RATIO -->
+  <section class="glass-card">
+    <div class="card-title">📊 Progress Today</div>
+    <div class="ratio-display">
+      <span class="ratio-top" id="ratioTop">0</span>
+      <div class="ratio-line"></div>
+      <span class="ratio-bottom" id="ratioBottom">0</span>
+    </div>
+    <div class="percentage-large" id="percentageLarge">0%</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBarFill" style="width:0%"></div></div>
+    <div class="status-label" id="progressStatusLabel">Set some targets above to begin</div>
+    <div class="priority-breakdown" id="priorityBreakdown"></div>
+  </section>
+
+  <!-- SUBJECT TRACKER -->
+  <section class="glass-card">
+    <div class="card-title">📚 Subjects Today <span class="count-badge" id="subjectCount">0</span></div>
+    <div class="subject-chips" id="subjectChips"></div>
+    <div class="input-group">
+      <input type="text" id="newSubjectInput" placeholder="+ Add subject">
+      <button class="add-btn" id="addSubjectBtn">Add</button>
+    </div>
+  </section>
+
+  <!-- HABIT TRACKER -->
+  <section class="glass-card">
+    <div class="card-title">🔄 Daily Habits <button class="edit-habit-btn" id="editHabitsBtn">✏️ Edit</button></div>
+    <div class="habit-progress" id="habitProgress">0 / 7 habits done</div>
+    <div class="progress-bar-track" style="height:8px; margin-bottom:12px;"><div class="progress-bar-fill" id="habitProgressBar" style="width:0%; background:#34d399;"></div></div>
+    <div id="habitList" class="habit-list"></div>
+    <div class="input-group">
+      <input type="text" id="newHabitInput" placeholder="Add custom habit…">
+      <button class="add-btn" id="addHabitBtn">Add</button>
+    </div>
+  </section>
+
+  <!-- WEEKLY OVERVIEW -->
+  <section class="glass-card">
+    <div class="card-title">📊 This Week at a Glance</div>
+    <div class="weekly-chart" id="weeklyChart"></div>
+  </section>
+
+  <!-- MOTIVATION QUOTE -->
+  <section class="glass-card quote-card">
+    <div class="quote-mark">“</div>
+    <div class="quote-text" id="quoteText"></div>
+    <div class="quote-author" id="quoteAuthor"></div>
+  </section>
+
+  <!-- CALENDAR HISTORY -->
+  <section class="glass-card">
+    <div class="card-title">📅 History</div>
+    <div class="calendar-nav">
+      <button class="mode-btn" id="prevMonthBtn">←</button>
+      <span id="calendarMonthLabel" style="font-weight:700;"></span>
+      <button class="mode-btn" id="nextMonthBtn">→</button>
+    </div>
+    <div class="calendar-grid" id="calendarWeekdays">
+      <span class="calendar-weekday">Su</span><span class="calendar-weekday">Mo</span><span class="calendar-weekday">Tu</span><span class="calendar-weekday">We</span><span class="calendar-weekday">Th</span><span class="calendar-weekday">Fr</span><span class="calendar-weekday">Sa</span>
+    </div>
+    <div class="calendar-grid" id="calendarDays"></div>
+    <div class="legend">
+      <span>🟢 all
